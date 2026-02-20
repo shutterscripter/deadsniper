@@ -1,12 +1,14 @@
 /*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
+Copyright © 2026 Jayesh Shinde jay2272001@gmail.com
 
 */
 package cmd
 
 import (
+	"fmt"
 
 	"github.com/spf13/cobra"
+	"deadsniper/config"
 	"deadsniper/scrapper"
 )
 
@@ -16,21 +18,30 @@ var visitCmd = &cobra.Command{
 	Short: "Check a URL for dead links",
 	Long:  `Scrapes the given URL and reports which links are broken or unreachable.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		scrapper.VisitUrl(scrapper.DefaultConfig.URL)
+		deadLinks, blockedByBot, err := scrapper.VisitUrl(config.DefaultConfig.URL)
+		if err != nil {
+			fmt.Fprintln(cmd.ErrOrStderr(), err)
+			return
+		}
+		if len(deadLinks) > 0 {
+			fmt.Printf("Dead links (%d):\n", len(deadLinks))
+			for _, link := range deadLinks {
+				fmt.Println(link)
+			}
+		}
+		if len(blockedByBot) > 0 {
+			fmt.Printf("\nLinks blocked by server / bot not allowed (403) (%d):\n", len(blockedByBot))
+			for _, link := range blockedByBot {
+				fmt.Println(link)
+			}
+		}
+		if len(deadLinks) == 0 && len(blockedByBot) == 0 {
+			fmt.Println("No dead links and no blocked links found.")
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(visitCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// visitCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	visitCmd.Flags().StringVarP(&scrapper.DefaultConfig.URL, "url", "u", "", "URL to scrape")
+	visitCmd.Flags().StringVarP(&config.DefaultConfig.URL, "url", "u", "", "URL to scrape")
 }
