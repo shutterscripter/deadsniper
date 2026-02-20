@@ -34,7 +34,15 @@ INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 mkdir -p "$INSTALL_DIR"
 
 echo "Downloading ${BIN} (${OS}/${ARCH})..."
-curl -fsSL "$URL" -o "$INSTALL_DIR/$BIN"
+if ! curl -fsSL "$URL" -o "$INSTALL_DIR/$BIN"; then
+  echo ""
+  echo "Download failed (404). If you maintain this repo: run GoReleaser to publish a release:"
+  echo "  go install github.com/goreleaser/goreleaser@latest"
+  echo "  goreleaser release"
+  echo ""
+  echo "Otherwise check that a release exists: https://github.com/${REPO}/releases"
+  exit 1
+fi
 chmod +x "$INSTALL_DIR/$BIN"
 
 echo "Installed $BIN to $INSTALL_DIR"
