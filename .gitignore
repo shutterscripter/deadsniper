@@ -32,3 +32,12 @@ Thumbs.db
 .env
 .env.local
 *.local
+
+
+# Data FIles (o/p)
+*.txt
+*.json
+*.csv
+*.xml
+*.yaml
+*.yml

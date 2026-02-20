@@ -5,8 +5,9 @@ type ConfigHttp struct {
 	Timeout    int
 	Delay      float64
 	Threads    int
-	OutputType int // 6: json, 2: csv, 4: xml, 8: text
-
+	OutputType int  
+	Verbose    bool
+	Help       bool
 }
 
 var DefaultConfig ConfigHttp  =   ConfigHttp{
