@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-
 	"github.com/gocolly/colly"
+	"deadsniper/config"
 )
 
 const (
@@ -52,7 +52,7 @@ func VisitUrl(url string) (deadLinks, blockedByBot []string, err error) {
 	blockedByBot = make([]string, 0)
 
 	c := colly.NewCollector()
-	// Use a browser-like User-Agent so sites (e.g. npm, Cloudflare) don't return 403 to the scraper
+
 	c.UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 	c.OnRequest(func(req *colly.Request) {
 		req.Headers.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
@@ -61,9 +61,7 @@ func VisitUrl(url string) (deadLinks, blockedByBot []string, err error) {
 
 	okStatus := map[int]bool{200: true, 201: true, 204: true, 301: true, 302: true, 304: true}
 	c.OnResponse(func(r *colly.Response) {
-		if strings.Contains(r.Request.URL.Host, "npmjs.com") {
-			fmt.Printf("[npmjs.com] response code: %d\n", r.StatusCode)
-		}
+		
 		dead := false
 		if r.StatusCode == 403 {
 			mu.Lock()
@@ -86,9 +84,7 @@ func VisitUrl(url string) (deadLinks, blockedByBot []string, err error) {
 		if r == nil || r.Request == nil {
 			return
 		}
-		if strings.Contains(r.Request.URL.Host, "npmjs.com") {
-			fmt.Printf("[npmjs.com] response code (OnError): %d\n", r.StatusCode)
-		}
+		
 		if r.StatusCode == 403 {
 			mu.Lock()
 			blockedByBot = append(blockedByBot, r.Request.URL.String())
@@ -112,6 +108,9 @@ func VisitUrl(url string) (deadLinks, blockedByBot []string, err error) {
 
 	c.OnRequest(func(r *colly.Request) {
 		// fmt.Println("Processing", r.URL.String())
+		if config.DefaultConfig.Verbose {
+			fmt.Println("Processing", r.URL.String())
+		}
 	})
 
 	c.Visit(url)
