@@ -1,0 +1,33 @@
+# GoReleaser config for deadsniper
+# https://goreleaser.com
+# Release: git tag v0.1.0 && git push origin v0.1.0 && goreleaser release
+
+project_name: deadsniper
+
+builds:
+  - id: default
+    main: .
+    binary: deadsniper
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Windows gets .exe automatically
+archives:
+  - id: default
+    format: binary
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if eq .Os \"windows\" }}.exe{{ end }}"
+    format_overrides:
+      - goos: windows
+        format: binary
+
+release:
+  github:
+    owner: shutterscripter
+    name: deadsniper
+  name_template: "v{{.Version}}"
