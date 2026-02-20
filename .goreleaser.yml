@@ -19,14 +19,15 @@ builds:
     goarch:
       - amd64
       - arm64
-    # Windows gets .exe automatically
 archives:
   - id: default
-    format: binary
-    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if eq .Os \"windows\" }}.exe{{ end }}"
+    formats:
+      - binary
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
     format_overrides:
       - goos: windows
-        format: binary
+        formats:
+          - binary
 
 release:
   github:
