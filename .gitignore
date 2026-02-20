@@ -34,10 +34,12 @@ Thumbs.db
 *.local
 
 
+# Build output
+dist/
+
 # Data FIles (o/p)
 *.txt
 *.json
 *.csv
 *.xml
-*.yaml
-*.yml
+
