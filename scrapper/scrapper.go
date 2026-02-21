@@ -1,11 +1,15 @@
 package scrapper
 
 import (
+	"deadsniper/config"
 	"fmt"
+	"net"
+	"net/http"
 	"strings"
 	"sync"
+	"time"
+
 	"github.com/gocolly/colly"
-	"deadsniper/config"
 )
 
 const (
@@ -51,7 +55,25 @@ func VisitUrl(url string) (deadLinks, blockedByBot []string, err error) {
 	deadLinks = make([]string, 0)
 	blockedByBot = make([]string, 0)
 
+	threads := config.DefaultConfig.Threads
+	if threads < 1 {
+		threads = 1
+	}
+
 	c := colly.NewCollector()
+	c.WithTransport(&http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   time.Duration(config.DefaultConfig.Timeout) * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+	})
+
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: threads,
+		RandomDelay: time.Duration(config.DefaultConfig.Delay*1000) * time.Millisecond,
+	})
 
 	c.UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 	c.OnRequest(func(req *colly.Request) {
