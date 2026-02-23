@@ -1,6 +1,6 @@
 # Deadsniper
 
-CLI tool that finds broken or dead links on a web page. Give it a URL; it scrapes that page only (no recursive crawl), checks every link, and reports dead links (4xx/5xx, soft 404s) and links that block the scraper (403).
+CLI tool that finds broken or dead links on a web page. Give it a URL; it crawls the site recursively (same-domain), checks discovered links, and reports dead links (4xx/5xx, soft 404s) and links that block the scraper (403).
 
 ## Quick start
 
@@ -30,11 +30,11 @@ deadsniper -u https://example.com
 
 ## Supported platforms
 
-| Platform        | Install |
-|----------------|--------|
-| macOS (Intel)  | One-liner above, or [Releases](https://github.com/shutterscripter/deadsniper/releases) → `deadsniper-darwin-amd64` |
-| macOS (Apple Silicon) | One-liner above, or Releases → `deadsniper-darwin-arm64` |
-| Linux (amd64/arm64)   | One-liner above, or Releases → `deadsniper-linux-amd64` / `deadsniper-linux-arm64` |
+| Platform              | Install                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| macOS (Intel)         | One-liner above, or [Releases](https://github.com/shutterscripter/deadsniper/releases) → `deadsniper-darwin-amd64`                   |
+| macOS (Apple Silicon) | One-liner above, or Releases → `deadsniper-darwin-arm64`                                                                             |
+| Linux (amd64/arm64)   | One-liner above, or Releases → `deadsniper-linux-amd64` / `deadsniper-linux-arm64`                                                   |
 | Windows (amd64/arm64) | [Releases](https://github.com/shutterscripter/deadsniper/releases) → `deadsniper-windows-amd64.exe` / `deadsniper-windows-arm64.exe` |
 
 ## Usage
@@ -48,21 +48,41 @@ deadsniper -u <URL>
 ```bash
 deadsniper -u https://example.com
 deadsniper --url https://mysite.com/page.html
+deadsniper -u https://example.com --recursive --max-depth 5
+deadsniper -u https://example.com -r=false
 deadsniper --version
+```
+
+### Recursive crawl examples
+
+```bash
+# Default recursive crawl (same-domain), depth 3
+deadsniper -u https://example.com
+
+# Recursive crawl with custom depth
+deadsniper -u https://example.com --recursive --max-depth 5
+
+# Short flags
+deadsniper -u https://example.com -r -m 5
+
+# Disable recursion (single page only)
+deadsniper -u https://example.com -r=false
 ```
 
 ## Options
 
-| Flag | Short | Description | Default |
-|------|--------|-------------|---------|
-| `--url` | `-u` | URL of the page to check for dead links | (required) |
-| `--verbose` | `-v` | Verbose output | false |
-| `--threads` | `-t` | Number of threads | 1 |
-| `--delay` | `-d` | Delay between requests (seconds) | 0.5 |
-| `--timeout` | `-T` | Request timeout (seconds) | 10 |
-| `--output-type` | `-o` | Output: 1=text file, 2=json file | 1 |
-| `--help` | `-h` | Help | |
-| `--version` | | Print version | |
+| Flag            | Short | Description                             | Default    |
+| --------------- | ----- | --------------------------------------- | ---------- |
+| `--url`         | `-u`  | URL of the page to check for dead links | (required) |
+| `--verbose`     | `-v`  | Verbose output                          | false      |
+| `--threads`     | `-t`  | Number of threads                       | 1          |
+| `--delay`       | `-d`  | Delay between requests (seconds)        | 0.5        |
+| `--timeout`     | `-T`  | Request timeout (seconds)               | 10         |
+| `--output-type` | `-o`  | Output: 1=text file, 2=json file        | 1          |
+| `--recursive`   | `-r`  | Recursively crawl same-domain pages     | true       |
+| `--max-depth`   | `-m`  | Max recursion depth for page crawling   | 3          |
+| `--help`        | `-h`  | Help                                    |            |
+| `--version`     |       | Print version                           |            |
 
 ## Output
 
@@ -77,7 +97,7 @@ With `--output-type`:
 ## How it works
 
 1. Fetches the URL with a browser-like User-Agent.
-2. Parses HTML and collects all `<a href="...">` links on that page only.
+2. Parses HTML and collects `<a href="...">` links recursively on same-domain pages (up to `--max-depth`).
 3. Requests each link and classifies: dead (4xx/5xx or soft 404), blocked (403), or OK (200/301/302/304).
 
 ## Build from source
@@ -98,16 +118,10 @@ chmod +x build.sh
 
 Binaries go to `dist/`. Requires Go 1.23+.
 
-## Releasing (maintainers)
-
-Releases are built by [GitHub Actions](.github/workflows/release.yml) when you push a version tag:
-
 ```bash
 git tag v0.1.4
 git push origin v0.1.4
 ```
-
-Binaries are published to [GitHub Releases](https://github.com/shutterscripter/deadsniper/releases); the install script uses the latest release.
 
 ## License
 
